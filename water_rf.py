@@ -9,7 +9,8 @@ import mlflow.sklearn
 import dagshub
 dagshub.init(repo_owner='bhattpriyang', repo_name='mlflow_exp_dagshub1', mlflow=True)
 
-mlflow.set_experiment("water_exp2")
+
+mlflow.set_experiment("water_exp_rf")
 
 # mlflow.set_tracking_uri("http://127.0.0.1:5000")
 mlflow.set_tracking_uri("https://dagshub.com/bhattpriyang/mlflow_exp_dagshub1.mlflow")
@@ -31,16 +32,18 @@ def fill_missing_with_median(df):
 train_processed_data = fill_missing_with_median(train_data)
 test_processed_data = fill_missing_with_median(test_data)
 
-from sklearn.ensemble import  GradientBoostingClassifier
+from sklearn.ensemble import  RandomForestClassifier
 import pickle
 X_train = train_processed_data.iloc[:,0:-1].values
 y_train = train_processed_data.iloc[:,-1].values
 
 n_estimators = 500
+max_depth= 2
+
 
 with mlflow.start_run():
 
-    clf = GradientBoostingClassifier(n_estimators=n_estimators)
+    clf = RandomForestClassifier(n_estimators=n_estimators, max_depth=max_depth)
     clf.fit(X_train,y_train)
 
     # save 
@@ -70,6 +73,7 @@ with mlflow.start_run():
     mlflow.log_metric("f1-score",f1_score)
 
     mlflow.log_param("n_estimators",n_estimators)
+    mlflow.log_param("max_depth",max_depth)
 
     cm= confusion_matrix(y_test,y_pred)
     plt.figure(figsize=(5,5))
@@ -82,12 +86,12 @@ with mlflow.start_run():
 
     mlflow.log_artifact("confusion_matrix.png")
 
-    mlflow.sklearn.log_model(clf,"GradientBoostingClassifier")
+    mlflow.sklearn.log_model(clf,"Random Forest Classifier")
 
     mlflow.log_artifact(__file__)
 
-    mlflow.set_tag("author","datathinkers")
-    mlflow.set_tag("model","GB")
+    mlflow.set_tag("author","anil")
+    mlflow.set_tag("model","rf")
 
     print("acc",acc)
     print("precision", precision)
